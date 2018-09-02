@@ -1,0 +1,10 @@
+{
+  "apps": [
+    {
+      "serverURL": "http://basictwitter2.herokuapp.com/parse",
+      "appId": "pikachu21",
+      "masterKey": "lawasaporlatocha",
+      "appName": "Basic TwitterSothio"
+    }
+  ]
+}
