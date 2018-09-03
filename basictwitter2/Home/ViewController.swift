@@ -18,6 +18,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
             
         tableView.dataSource = self
+        title = PFUser.current()?.username
         getMessages()
     }
     
@@ -63,9 +64,24 @@ extension ViewController: UITableViewDataSource{
         let sender = messageObj["sender"] as? String ?? ""
         let message = messageObj["message"] as? String ?? ""
         
+        let likes = messageObj["likes"] as? [String] ?? [String]()
+        
+        let comments = messageObj["comments"] as? [String] ?? [String]()
+        
+        
         cell.usernameLabel.text = sender
         cell.messageLabel.text = message
         
+        cell.likeButton.setTitle("\(likes.count) likes", for: .normal)
+        cell.commentsButton.setTitle("\(comments.count) comments", for: .normal)
+        
+        //set up like button click
+        cell.likeButton.tag = indexPath.row
+        cell.likeButton.addTarget(self, action: #selector(likeCliked(sender:)), for: .touchUpInside)
+        
+        //set up comment button click
+        cell.commentsButton.tag = indexPath.row
+        cell.commentsButton.addTarget(self, action: #selector(commentsClicked), for: .touchUpInside)
         
         return cell
     }
@@ -73,5 +89,36 @@ extension ViewController: UITableViewDataSource{
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return messages.count
     }
-    
+    @objc func likeCliked(sender: UIButton){
+        
+        let messageObj = messages[sender.tag]
+        let currentUsername = PFUser.current()?.username!
+        let sender = messageObj["sender"] as? String ?? ""
+        var likesArray = messageObj["likes"] as? [String] ?? [String]()
+        
+        if sender == currentUsername{
+            
+            Helper.shared.showAlert(title: "Not allowed", message: "You are not allowed to like your own message.", viewController: self)
+            return
+        }
+        
+        if likesArray.contains(currentUsername!){
+            
+            Helper.shared.showAlert(title: "Not allowed", message: "You can not like a message multiple times.", viewController: self)
+            return
+        }
+        
+        likesArray.append(currentUsername!)
+        messageObj["likes"] = likesArray
+        messageObj.saveInBackground { (suceed, error) in
+            
+            self.tableView.reloadData()
+        }
+        
+        
+    }
+    @objc func commentsClicked(sender: UIButton){
+        
+        print(sender.tag)
+    }
 }
